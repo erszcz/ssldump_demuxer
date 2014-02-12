@@ -1,28 +1,25 @@
 #!/usr/bin/env python
 
+"""Convert an `ssldump` log file with mixed records from multiple connections
+to multiple files each with records from a single connection."""
+
 import re
 import sys
 
 new_record_p = re.compile("(\d+)\s+(\d+)\s+\d+\.\d+\s+")
 prefix = "demux."
 
-def main(args):
-    global prefix
-    for i in xrange(len(args)):
-        if args[i] == "--prefix":
-            prefix = args[i+1]
-    streams = read_ssldump()
-    print_streams(streams)
-
-# streams is:
-# {<stream_id>: [<line_or_record>],
-#  ...}
-#
-# stream_id 0 is the catch-all stream for plaintext/record-less packets
-#
-# record is:
-# (<stream_id>, [<lines>])
 def read_ssldump():
+    """Return demuxed streams read from an ssldump.
+    `streams` is a dictionary:
+
+        {<stream_id>: [<line_or_record>],
+         ...}
+
+    `stream_id` 0 is the catch-all stream for plaintext/record-less packets.
+    `line` is just a string.
+    `record` is a tuple of the form `(<stream_id>, [<lines>])`.
+    """
     streams = {0: []}
     current_stream = 0
     current_record = None
@@ -54,6 +51,14 @@ def print_streams(streams):
                     f.write("".join(item))
                 else:
                     f.write(item)
+
+def main(args):
+    global prefix
+    for i in xrange(len(args)):
+        if args[i] == "--prefix":
+            prefix = args[i+1]
+    streams = read_ssldump()
+    print_streams(streams)
 
 if __name__ == '__main__':
     main(sys.argv)
