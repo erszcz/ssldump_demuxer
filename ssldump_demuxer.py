@@ -9,8 +9,8 @@ import sys
 new_record_p = re.compile("(\d+)\s+(\d+)\s+\d+\.\d+\s+")
 prefix = "demux."
 
-def read_ssldump():
-    """Return demuxed streams read from an ssldump.
+def read_ssldump(dump):
+    """Return demuxed `streams` read from an ssldump file-like `dump`.
     `streams` is a dictionary:
 
         {<stream_id>: [<line_or_record>],
@@ -23,7 +23,7 @@ def read_ssldump():
     streams = {0: []}
     current_stream = 0
     current_record = None
-    for line in sys.stdin:
+    for line in dump:
         m = None
         if line.startswith("New TCP connection #"):
             start = line.find("#")+1
@@ -57,7 +57,7 @@ def main(args):
     for i in xrange(len(args)):
         if args[i] == "--prefix":
             prefix = args[i+1]
-    streams = read_ssldump()
+    streams = read_ssldump(sys.stdin)
     print_streams(streams)
 
 if __name__ == '__main__':
